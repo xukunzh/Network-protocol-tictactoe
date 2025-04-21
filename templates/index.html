@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tic-Tac-Toe with History</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Network Tic-Tac-Toe</h1>
+  <div id="status">Waiting for opponent...</div>
+  <div class="container">
+    <div id="history" class="panel">
+      <h3>Game History</h3>
+      <ul id="history-list"></ul>
+    </div>
+
+    <div class="main-panel">
+      <div id="results">
+        <div>P1 X: <span id="p1x">0</span></div>
+        <div>P1 O: <span id="p1o">0</span></div>
+        <div>P2 X: <span id="p2x">0</span></div>
+        <div>P2 O: <span id="p2o">0</span></div>
+        <div>Draws: <span id="draws">0</span></div>
+      </div>
+      <div id="player-info">
+        <span id="player1">Player 1: --</span>
+        <span id="player2">Player 2: --</span>
+      </div>
+      <div id="board" class="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+    </div>
+
+    <div id="chat-container" class="panel">
+  <div id="messages"></div>
+  <input id="chat-input" placeholder="Type message..." />
+  <button id="send-btn">Send</button>
+  <button id="rematch-btn">New Game</button>
+
+  <hr>
+  <h4>System Logs</h4>
+  <div id="log-panel" style="height: 120px; overflow-y: auto; font-size: 12px; background: #f4f4f4;
+  border: 1px solid #ccc; padding: 5px;"></div>
+</div>
+
+  </div>
+  <script src="/static/main.js"></script>
+</body>
+</html>

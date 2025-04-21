@@ -1,0 +1,92 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+
+#status {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;    /* ensure all panels match tallest */
+  gap: 20px;
+}
+
+.panel {
+  width: 200px;
+  /* remove fixed height to allow flex stretch */
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  width: auto;
+  overflow: visible;
+}
+
+#results {
+  margin-bottom: 10px;
+}
+
+#results div,
+#player-info span {
+  margin: 3px 0;
+}
+
+#player-info {
+  margin-bottom: 10px;
+  text-align: center; /* center text */
+}
+#player-info span {
+  display: block;      /* each on its own line */
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  border: 2px solid #333;
+  margin: 0 auto;
+}
+
+.cell {
+  border: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  cursor: pointer;
+}
+
+#chat-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+#messages {
+  flex: 1;
+  border: 1px solid #ccc;
+  overflow-y: auto;
+  padding: 5px;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+#chat-input,
+#send-btn,
+#rematch-btn {
+  margin: 5px 0;
+}
