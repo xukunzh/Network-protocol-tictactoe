@@ -90,109 +90,117 @@ def handle_join():
 # Handle a player's move event
 @socketio.on("move")
 def handle_move(data):
-    player_id = data.get("playerId")
-    room_id = data.get("room")
-    idx = data.get("index")
-    room = rooms.get(room_id)
-    # Determine symbol: either provided or from server roles
-    sym = data.get("symbol") or (
-        room["roles"][player_id] if room and "roles" in room else None
-    )
-    # Validate move
-    if (
-        not room
-        or sym is None
-        or idx is None
-        or idx < 0
-        or idx >= 9
-        or room["board"][idx]
-        or room["turn"] != player_id
-    ):
-        return
-    # Apply move
-    room["board"][idx] = sym
-    emit("move", {"index": idx, "symbol": sym}, room=room_id)
-    emit("move", {"index": idx, "symbol": sym}, room=room_id)
-    # Check win condition
-    lines = [
-        (0, 1, 2),
-        (3, 4, 5),
-        (6, 7, 8),
-        (0, 3, 6),
-        (1, 4, 7),
-        (2, 5, 8),
-        (0, 4, 8),
-        (2, 4, 6),
-    ]
-    for a, b, c in lines:
-        if room["board"][a] == room["board"][b] == room["board"][c] == sym:
-            room["history"].append({"winner": player_id, "symbol": sym})
-            room["stats"][player_id][sym] += 1
-            for pid2, player_session_id2 in room["players"].items():
-                msg = "You win!" if pid2 == player_id else "Unfortunately you lose."
-                emit("game_over", {"message": msg}, room=player_session_id2)
+    try:
+        player_id = data.get("playerId")
+        room_id = data.get("room")
+        idx = data.get("index")
+        room = rooms.get(room_id)
+        # Determine symbol: either provided or from server roles
+        sym = data.get("symbol") or (
+            room["roles"][player_id] if room and "roles" in room else None
+        )
+        # Validate move
+        if (
+            not room
+            or sym is None
+            or idx is None
+            or idx < 0
+            or idx >= 9
+            or room["board"][idx]
+            or room["turn"] != player_id
+        ):
+            return
+        # Apply move
+        room["board"][idx] = sym
+        emit("move", {"index": idx, "symbol": sym}, room=room_id)
+        # Check win condition
+        lines = [
+            (0, 1, 2),
+            (3, 4, 5),
+            (6, 7, 8),
+            (0, 3, 6),
+            (1, 4, 7),
+            (2, 5, 8),
+            (0, 4, 8),
+            (2, 4, 6),
+        ]
+        for a, b, c in lines:
+            if room["board"][a] == room["board"][b] == room["board"][c] == sym:
+                room["history"].append({"winner": player_id, "symbol": sym})
+                room["stats"][player_id][sym] += 1
+                for pid2, player_session_id2 in room["players"].items():
+                    msg = "You win!" if pid2 == player_id else "Unfortunately you lose."
+                    emit("game_over", {"message": msg}, room=player_session_id2)
+                emit("stats", room["stats"], room=room_id)
+                emit("history", room["history"], room=room_id)
+                return
+        # Check draw
+        if all(room["board"]):
+            room["history"].append({"winner": "D", "symbol": None})
+            room["stats"]["D"] += 1
+            emit("game_over", {"message": "Draw!"}, room=room_id)
             emit("stats", room["stats"], room=room_id)
             emit("history", room["history"], room=room_id)
             return
-    # Check draw
-    if all(room["board"]):
-        room["history"].append({"winner": "D", "symbol": None})
-        room["stats"]["D"] += 1
-        emit("game_over", {"message": "Draw!"}, room=room_id)
-        emit("stats", room["stats"], room=room_id)
-        emit("history", room["history"], room=room_id)
-        return
-    room["turn"] = "2" if player_id == "1" else "1"
-
+        room["turn"] = "2" if player_id == "1" else "1"
+    except Exception as e:
+        print(f"[ERROR] Error handling move: {e}")
 
 # Handle chat event from
 @socketio.on("chat")
 def handle_chat(data):
-    print(f"[CHAT] Player {data['playerId']} in room {data['room']}: {data['message']}")
-    emit(
-        "chat",
-        {"playerId": data["playerId"], "message": data["message"]},
-        room=data["room"],
-    )
+    try:
+        print(f"[CHAT] Player {data['playerId']} in room {data['room']}: {data['message']}")
+        emit(
+            "chat",
+            {"playerId": data["playerId"], "message": data["message"]},
+            room=data["room"],
+        )
+    except Exception as e:
+        print(f"[ERROR] Error handling chat: {e}")
 
 
 @socketio.on("rematch")
 def handle_rematch(data):
-    player_id, room_id = data["playerId"], data["room"]
-    room = rooms[room_id]
+    try:
+        player_id, room_id = data["playerId"], data["room"]
+        room = rooms[room_id]
 
-    print(f"[REMATCH] Player {player_id} in room {room_id} requested a rematch")
+        print(f"[REMATCH] Player {player_id} in room {room_id} requested a rematch")
 
-    room["rematch"][player_id] = True
-    other = "2" if player_id == "1" else "1"
+        room["rematch"][player_id] = True
+        other = "2" if player_id == "1" else "1"
 
-    if room["rematch"].get(other):
-        room["flip"] = not room["flip"]
-        room["roles"] = {"1": "O", "2": "X"} if room["flip"] else {"1": "X", "2": "O"}
-        room["board"] = [""] * 9
-        room["turn"] = "1" if room["roles"]["1"] == "X" else "2"
-        room["rematch"] = {"1": False, "2": False}
+        if room["rematch"].get(other):
+            room["flip"] = not room["flip"]
+            room["roles"] = {"1": "O", "2": "X"} if room["flip"] else {"1": "X", "2": "O"}
+            room["board"] = [""] * 9
+            room["turn"] = "1" if room["roles"]["1"] == "X" else "2"
+            room["rematch"] = {"1": False, "2": False}
 
-        print(f"[REMATCH] Both players agreed. Restarting game in room {room_id}")
-        for pid2, player_session_id2 in room["players"].items():
-            emit(
-                "start",
-                {
-                    "playerId": pid2,
-                    "symbol": room["roles"][pid2],
-                    "room": room_id,
-                    "roles": room["roles"],
-                    "stats": room["stats"],
-                    "history": room["history"],
-                    "rematch": True,
-                },
-                room=player_session_id2,
-            )
-    else:
-        print(f"[REMATCH] Waiting for Player {other} in room {room_id}")
-        emit("rematch_pending", {}, room=room["players"][player_id])
-        emit("rematch_request", {}, room=room["players"][other])
-
+            print(f"[REMATCH] Both players agreed. Restarting game in room {room_id}")
+            for pid2, player_session_id2 in room["players"].items():
+                emit(
+                    "start",
+                    {
+                        "playerId": pid2,
+                        "symbol": room["roles"][pid2],
+                        "room": room_id,
+                        "roles": room["roles"],
+                        "stats": room["stats"],
+                        "history": room["history"],
+                        "rematch": True,
+                    },
+                    room=player_session_id2,
+                )
+        else:
+            print(f"[REMATCH] Waiting for Player {other} in room {room_id}")
+            emit("rematch_pending", {}, room=room["players"][player_id])
+            emit("rematch_request", {}, room=room["players"][other])
+    except KeyError as ke:
+        print(f"[ERROR] Missing key in rematch data: {ke}")
+    except Exception as e:
+        print(f"[ERROR] Error handling rematch: {e}")
 
 # Start the server
 if __name__ == "__main__":

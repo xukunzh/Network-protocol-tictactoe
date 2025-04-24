@@ -1,3 +1,7 @@
+# Network-Protocol-Tictactoe
+
+A real-time multiplayer Tic-Tac-Toe game implemented using WebSocket protocol.
+
 Config the environment
 `python3 venv venv`
 `souce venv/bin/activate`
